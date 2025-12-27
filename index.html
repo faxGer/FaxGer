@@ -6,43 +6,96 @@
   <title>FaxGer Global Logistics</title>
   <link rel="icon" href="https://static.vecteezy.com/system/resources/previews/016/716/181/large_2x/website-3d-icon-png.png" type="image/x-icon">
   <style>
+    /* বেসিক স্টাইল */
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      width: 100%;
       overflow: hidden;
-      font-family: sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f9;
     }
+
+
     .iframe-container {
       position: relative;
       width: 100%;
       height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
+
     iframe {
       width: 100%;
-      height: 100%;
+      height: 95%;
       border: none;
+      /* মোবাইলে স্মুথ স্ক্রলিং এর জন্য */
+      -webkit-overflow-scrolling: touch;
     }
-    .loader {
+
+
+    /* লোডিং স্পিনার স্টাইল */
+    .loader-wrapper {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.2rem;
-      color: #666;
+      text-align: center;
       z-index: 10;
+    }
+
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-left-color: #09f;
+      animation: spin 1s ease infinite;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+
+    .loading-text {
+      color: #555;
+      font-size: 14px;
+      display: block;
     }
   </style>
 </head>
 <body>
+
+
   <div class="iframe-container">
-    <div class="loader" id="loader">Loading FaxGer...</div>
+    <div class="loader-wrapper" id="loader">
+      <div class="spinner"></div>
+      <span class="loading-text">Loading FaxGer...</span>
+    </div>
+
+
     <iframe
       src="https://script.google.com/macros/s/AKfycbxyUpam04vSdyHOt_6LLDeHCiJUIy2ULcEZvcXIlpAMAt97e7Je1JW29cYMRqQlQ8Wb/exec"
       title="FaxGer Global Logistics"
-      onload="document.getElementById('loader').style.display='none';"
+      onload="hideLoader()"
       allowfullscreen>
     </iframe>
   </div>
+
+
+  <script>
+    // অ্যাপ লোড হয়ে গেলে লোডার বন্ধ করার ফাংশন
+    function hideLoader() {
+      document.getElementById('loader').style.display = 'none';
+    }
+  </script>
+
+
 </body>
 </html>
