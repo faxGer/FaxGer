@@ -2,100 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>FaxGer Global Logistics</title>
-  <link rel="icon" href="https://static.vecteezy.com/system/resources/previews/016/716/181/large_2x/website-3d-icon-png.png" type="image/x-icon">
+  
+  <link rel="icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ" type="image/png">
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ">
+
   <style>
-    /* বেসিক স্টাইল */
-    html, body {
+    :root {
+      --primary: #0099ff;
+      --accent: #00c6ff;
+      --bg: #ffffff;
+      --text: #2d3436;
+      --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body, html {
       margin: 0;
       padding: 0;
-      height: 100%;
       width: 100%;
+      height: 100%;
+      height: 100dvh; /* Dynamic viewport for mobile bars */
       overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f4f9;
+      background-color: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-
-    .iframe-container {
+    .app-wrapper {
       position: relative;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
     }
 
-
-    iframe {
+    /* Iframe Optimization */
+    #main-app {
+      flex: 1;
       width: 100%;
       height: 100%;
       border: none;
-      /* মোবাইলে স্মুথ স্ক্রলিং এর জন্য */
-      -webkit-overflow-scrolling: touch;
+      opacity: 0; /* Start hidden for a smooth fade-in */
+      transition: var(--transition);
+      z-index: 1;
     }
 
+    #main-app.loaded {
+      opacity: 1;
+    }
 
-    /* লোডিং স্পিনার স্টাইল */
-    .loader-wrapper {
+    /* Modern Minimalist Loader */
+    .loader-overlay {
       position: absolute;
-      text-align: center;
-      z-index: 10;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      z-index: 100;
+      transition: var(--transition);
     }
 
+    .spinner-box {
+      position: relative;
+      width: 60px;
+      height: 60px;
+    }
 
     .spinner {
-      border: 5px solid rgba(0, 0, 0, 0.1);
-      width: 50px;
-      height: 50px;
-      border-radius: 60%;
-      border-left-color: #09f;
-      animation: spin 1s ease infinite;
-      display: inline-block;
-      margin-bottom: 10px;
+      width: 100%;
+      height: 100%;
+      border: 3px solid #f0f0f0;
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
+    .loading-status {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
 
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
+    /* Utility: Hide state */
+    .hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
 
-    .loading-text {
-      color: #555;
-      font-size: 14px;
-      display: block;
+    /* Background Pulse for "Live" feel */
+    .loader-overlay::before {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: var(--primary);
+      filter: blur(80px);
+      opacity: 0.1;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.05; transform: scale(1); }
+      50% { opacity: 0.15; transform: scale(1.2); }
     }
   </style>
 </head>
 <body>
 
-
-  <div class="iframe-container">
-    <div class="loader-wrapper" id="loader">
-      <div class="spinner"></div>
-      <span class="loading-text">Loading FaxGer...</span>
+  <div class="app-wrapper">
+    <div class="loader-overlay" id="loader">
+      <div class="spinner-box">
+        <div class="spinner"></div>
+      </div>
+      <div class="loading-status" id="status-text">Initializing FaxGer...</div>
     </div>
 
-
     <iframe
+      id="main-app"
       src="https://script.google.com/macros/s/AKfycbxyUpam04vSdyHOt_6LLDeHCiJUIy2ULcEZvcXIlpAMAt97e7Je1JW29cYMRqQlQ8Wb/exec"
-      title="FaxGer Global Logistics"
-      onload="hideLoader()"
-      allowfullscreen>
+      title="FaxGer Global Logistics Dashboard"
+      allow="geolocation; camera; clipboard-write"
+      loading="eager">
     </iframe>
   </div>
 
-
   <script>
-    // অ্যাপ লোড হয়ে গেলে লোডার বন্ধ করার ফাংশন
-    function hideLoader() {
-      document.getElementById('loader').style.display = 'none';
-    }
-  </script>
+    const iframe = document.getElementById('main-app');
+    const loader = document.getElementById('loader');
+    const statusText = document.getElementById('status-text');
 
+    // 1. Smooth Transition Logic
+    iframe.onload = function() {
+      statusText.innerText = "Syncing Data...";
+      
+      setTimeout(() => {
+        iframe.classList.add('loaded');
+        loader.classList.add('hidden');
+      }, 500); // Slight delay for psychological "loading" of data
+    };
+
+    // 2. Network Check / Fail-safe
+    window.addEventListener('offline', () => {
+      statusText.innerText = "Check Connection...";
+      statusText.style.color = "#ff4757";
+    });
+
+    window.addEventListener('online', () => {
+      statusText.innerText = "Reconnecting...";
+      statusText.style.color = "var(--text)";
+    });
+
+    // 3. Fallback: Force show app if Google Script hangs
+    setTimeout(() => {
+      if (!iframe.classList.contains('loaded')) {
+        console.warn('Iframe load taking too long - forcing visibility.');
+        iframe.classList.add('loaded');
+        loader.classList.add('hidden');
+      }
+    }, 12000); // 12 second limit
+
+    // 4. iOS Scroll Fix
+    document.addEventListener('touchmove', function (e) {
+      if (e.scale !== 1) { e.preventDefault(); }
+    }, { passive: false });
+  </script>
 
 </body>
 </html>
+
