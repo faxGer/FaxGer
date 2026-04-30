@@ -3,17 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>FaxGer Global Logistics</title>
   
+  <!-- Primary Meta Tags (SEO) -->
+  <title>FaxGer Global Logistics | International Shipping Solutions</title>
+  <meta name="title" content="FaxGer Global Logistics | International Shipping Solutions">
+  <meta name="description" content="Calculate international shipping rates, track parcels, and manage logistics with FaxGer. Reliable solutions for global shipping.">
+  <meta name="keywords" content="FaxGer, Logistics, Shipping, Courier, International Shipping, DHL, FedEx, UPS, ARAMEX, OCS, MASTERAIR, SHIPPING RATE,">
+  <meta name="author" content="FaxGer IT Farm">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook / WhatsApp / Instagram -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rate.faxger.com/">
+  <meta property="og:title" content="FaxGer Global Logistics - Advanced Shipping Portal">
+  <meta property="og:description" content="Get instant shipping quotes and compare rates from top global carriers with FaxGer.">
+  <meta property="og:image" content="https://drive.google.com/thumbnail?id=1YixXpA8V8ruHiqjv1dzn3lqx0REBTHwS&sz=w1200">
+  <meta property="og:site_name" content="FaxGer">
+
+  <!-- X / Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://rate.faxger.com/">
+  <meta property="twitter:title" content="FaxGer Global Logistics - Advanced Shipping Portal">
+  <meta property="twitter:description" content="Get instant shipping quotes and compare rates from top global carriers with FaxGer.">
+  <meta property="twitter:image" content="https://drive.google.com/thumbnail?id=1YixXpA8V8ruHiqjv1dzn3lqx0REBTHwS&sz=w1200">
+
   <link rel="icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ" type="image/png">
   <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ">
 
   <style>
     :root {
-      --primary: #0099ff;
-      --accent: #00c6ff;
-      --bg: #ffffff;
-      --text: #2d3436;
+      /* Deep Blue and Glowing Pink Theme */
+      --primary: #ff007f; /* Glowing Pink */
+      --accent: #001d47;  /* Deep Blue */
+      --bg: #000c1d;      /* Very Dark Blue Background */
+      --text: #ffffff;
+      --loader-bg: #000c1d;
       --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -24,7 +48,7 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      height: 100dvh; /* Dynamic viewport for mobile bars */
+      height: 100dvh;
       overflow: hidden;
       background-color: var(--bg);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -44,7 +68,7 @@
       width: 100%;
       height: 100%;
       border: none;
-      opacity: 0; /* Start hidden for a smooth fade-in */
+      opacity: 0;
       transition: var(--transition);
       z-index: 1;
     }
@@ -53,7 +77,7 @@
       opacity: 1;
     }
 
-    /* Modern Minimalist Loader */
+    /* Loader Overlay */
     .loader-overlay {
       position: absolute;
       inset: 0;
@@ -61,33 +85,35 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: var(--bg);
+      background: var(--loader-bg);
       z-index: 100;
       transition: var(--transition);
     }
 
     .spinner-box {
       position: relative;
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
     }
 
     .spinner {
       width: 100%;
       height: 100%;
-      border: 3px solid #f0f0f0;
+      border: 3px solid rgba(255, 0, 127, 0.1);
       border-top: 3px solid var(--primary);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5); /* Glowing Effect */
     }
 
     .loading-status {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: 1px;
+      margin-top: 25px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 2px;
       text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
     }
 
     @keyframes spin {
@@ -95,28 +121,27 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Utility: Hide state */
     .hidden {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
 
-    /* Background Pulse for "Live" feel */
+    /* Background Pulse for Deep Blue Feel */
     .loader-overlay::before {
       content: '';
       position: absolute;
-      width: 200px;
-      height: 200px;
+      width: 300px;
+      height: 300px;
       background: var(--primary);
-      filter: blur(80px);
-      opacity: 0.1;
+      filter: blur(100px);
+      opacity: 0.15;
       animation: pulse 3s infinite ease-in-out;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 0.05; transform: scale(1); }
-      50% { opacity: 0.15; transform: scale(1.2); }
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 0.2; transform: scale(1.3); }
     }
   </style>
 </head>
@@ -127,7 +152,7 @@
       <div class="spinner-box">
         <div class="spinner"></div>
       </div>
-      <div class="loading-status" id="status-text">Initializing FaxGer...</div>
+      <div class="loading-status" id="status-text">FaxGer Initializing...</div>
     </div>
 
     <iframe
@@ -146,35 +171,34 @@
 
     // 1. Smooth Transition Logic
     iframe.onload = function() {
-      statusText.innerText = "Syncing Data...";
+      statusText.innerText = "Syncing with Server...";
       
       setTimeout(() => {
         iframe.classList.add('loaded');
         loader.classList.add('hidden');
-      }, 500); // Slight delay for psychological "loading" of data
+      }, 800);
     };
 
-    // 2. Network Check / Fail-safe
+    // 2. Network Check
     window.addEventListener('offline', () => {
-      statusText.innerText = "Check Connection...";
+      statusText.innerText = "Offline - Check Connection";
       statusText.style.color = "#ff4757";
     });
 
     window.addEventListener('online', () => {
       statusText.innerText = "Reconnecting...";
-      statusText.style.color = "var(--text)";
+      statusText.style.color = "var(--primary)";
     });
 
-    // 3. Fallback: Force show app if Google Script hangs
+    // 3. Fallback
     setTimeout(() => {
       if (!iframe.classList.contains('loaded')) {
-        console.warn('Iframe load taking too long - forcing visibility.');
         iframe.classList.add('loaded');
         loader.classList.add('hidden');
       }
-    }, 12000); // 12 second limit
+    }, 15000);
 
-    // 4. iOS Scroll Fix
+    // 4. iOS Scale Fix
     document.addEventListener('touchmove', function (e) {
       if (e.scale !== 1) { e.preventDefault(); }
     }, { passive: false });
