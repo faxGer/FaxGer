@@ -2,113 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  
-  <!-- Primary Meta Tags (SEO) -->
-  <title>FaxGer Global Logistics | International Shipping Solutions</title>
-  <meta name="title" content="FaxGer Global Logistics | International Shipping Solutions">
-  <meta name="description" content="Calculate international shipping rates, track parcels, and manage logistics with FaxGer. Reliable solutions for global shipping.">
-  <meta name="keywords" content="FaxGer, Shipping Quotes, International Courier, Logistics Bangladesh, Courier Tracking, DHL Rates, FedEx Rates, ups rates, Shipping Rates, Best courier service in Bangladesh, Fastest courier service in BD, Low cost courier service, Courier service Dhaka, Next day delivery service, International courier service in Bangladesh, Send parcel from Bangladesh to USA/UK/Canada, DHL/FedEx/Aramex rates in Bangladesh, Cheap international shipping from BD, Weight-based courier rates in Bangladesh, Courier service for heavy items BD, Courier service in Uttara, Courier service near me, international Courier service near me,Cheap international courier service Dhaka, Courier service from Bangladesh to USA, DHL price list Bangladesh, Best international shipping service BD, Courier to UK from Bangladesh, International document delivery service, Shipping cost to Canada from BD, Express delivery international Bangladesh,Aramex Bangladesh price list, E-commerce international shipping BD, International courier near me, Cheapest way to send parcel to Europe,International courier service contact number, Reliable international courier for electronics,Fastest courier for documents to Europe, Cheapest shipping from China to Bangladesh, International parcel delivery rates chart,Courier service for medicine from BD to USA, UPS Bangladesh service center, International parcel tracking BD,Express shipping to Australia from Bangladesh, Door to door courier service for India,Gift delivery to UK from Bangladesh,Export courier service in Bangladesh, International courier discount offers, Online booking for international courier,">
-  <meta name="author" content="FaxGer IT Farm">
-  <meta name="robots" content="index, follow">
-
-  <!-- Open Graph / Facebook / WhatsApp / Instagram -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://faxger.com/">
-  <meta property="og:title" content="FaxGer Global Logistics - Advanced Shipping Portal">
-  <meta property="og:description" content="Get instant shipping quotes and compare rates from top global carriers with FaxGer.">
-  <meta property="og:image" content="https://drive.google.com/thumbnail?id=1w3DJm9BqSaINRUorMHTgDkatVzffkIjx&sz=w1200">
-  <meta property="og:site_name" content="FaxGer">
-
-  <!-- X / Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://faxger.com/">
-  <meta property="twitter:title" content="FaxGer Global Logistics - Advanced Shipping Portal">
-  <meta property="twitter:description" content="Get instant shipping quotes and compare rates from top global carriers with FaxGer.">
-  <meta property="twitter:image" content="https://drive.google.com/thumbnail?id=1w3DJm9BqSaINRUorMHTgDkatVzffkIjx&sz=w1200">
-
-  <link rel="icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ" type="image/png">
-  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/13QoaBni9mY0tTYPkCodu4KSqe0syFkrZ">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FaxGer Global Logistics</title>
+  <link rel="icon" href="https://static.vecteezy.com/system/resources/previews/016/716/181/large_2x/website-3d-icon-png.png" type="image/x-icon">
   <style>
-    :root {
-      /* Deep Blue and Glowing Pink Theme */
-      --primary: #ff007f; /* Glowing Pink */
-      --accent: #001d47;  /* Deep Blue */
-      --bg: #000c1d;      /* Very Dark Blue Background */
-      --text: #ffffff;
-      --loader-bg: #000c1d;
-      --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #f4f4f9; }
+    .iframe-container { position: relative; width: 100%; height: 100vh; }
+    iframe { width: 100%; height: 100%; border: none; }
+    .loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #09f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="iframe-container">
+    <div id="loader" class="loader">
+      <div class="spinner"></div>
+      <p>Loading FaxGer...</p>
+    </div>
+    <iframe id="main-frame" src="" onload="document.getElementById('loader').style.display='none'"></iframe>
+  </div>
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  <script>
+    // আপনার Google Script Web App URL এখানে দিন
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbyH2dt2M5xDJVOavth-UwS3xvOjAScMhvtBBHwYuWI0XtrgDQmxaLljrc4AaY0ukS-h/exec";
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      background-color: var(--bg);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    // URL থেকে প্যারামিটার (p) নেওয়া হচ্ছে
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('p') || 'home';
 
-    .app-wrapper {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Iframe Optimization */
-    #main-app {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-      border: none;
-      opacity: 0;
-      transition: var(--transition);
-      z-index: 1;
-    }
-
-    #main-app.loaded {
-      opacity: 1;
-    }
-
-    /* Loader Overlay */
-    .loader-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: var(--loader-bg);
-      z-index: 100;
-      transition: var(--transition);
-    }
-
-    .spinner-box {
-      position: relative;
-      width: 65px;
-      height: 65px;
-    }
-
-    .spinner {
-      width: 100%;
-      height: 100%;
-      border: 3px solid rgba(255, 0, 127, 0.1);
-      border-top: 3px solid var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5); /* Glowing Effect */
-    }
-
-    .loading-status {
-      margin-top: 25px;
-      font-size: 0.85rem;
+    // আইফ্রেমের সোর্স সেট করা হচ্ছে
+    document.getElementById('main-frame').src = BASE_URL + "?p=" + page;
+  </script>
+</body>
+</html>
       font-weight: 700;
       color: var(--primary);
       letter-spacing: 2px;
