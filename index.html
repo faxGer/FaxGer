@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,109 +7,58 @@
   <title>FaxGer Global Logistics</title>
   <link rel="icon" href="https://static.vecteezy.com/system/resources/previews/016/716/181/large_2x/website-3d-icon-png.png" type="image/x-icon">
   <style>
+    /* ফুল স্ক্রিন সেটিংস */
     html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #f4f4f9; }
     .iframe-container { position: relative; width: 100%; height: 100vh; }
-    iframe { width: 100%; height: 100%; border: none; }
-    .loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #09f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+
+    /* লোডার স্টাইল */
+    .loader-wrapper {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center; z-index: 10;
+    }
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1); width: 40px; height: 40px;
+      border-radius: 50%; border-left-color: #09f;
+      animation: spin 1s linear infinite; display: inline-block;
+    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
   <div class="iframe-container">
-    <div id="loader" class="loader">
+    <div class="loader-wrapper" id="loader">
       <div class="spinner"></div>
-      <p>Loading FaxGer...</p>
-    </div>
-    <iframe id="main-frame" src="" onload="document.getElementById('loader').style.display='none'"></iframe>
-  </div>
-
-  <script>
-    // আপনার Google Script Web App URL এখানে দিন
-    const BASE_URL = "https://script.google.com/macros/s/AKfycbyH2dt2M5xDJVOavth-UwS3xvOjAScMhvtBBHwYuWI0XtrgDQmxaLljrc4AaY0ukS-h/exec";
-
-    // URL থেকে প্যারামিটার (p) নেওয়া হচ্ছে
-    const params = new URLSearchParams(window.location.search);
-    const page = params.get('p') || 'home';
-
-    // আইফ্রেমের সোর্স সেট করা হচ্ছে
-    document.getElementById('main-frame').src = BASE_URL + "?p=" + page;
-  </script>
-</body>
-</html>
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* Background Pulse for Deep Blue Feel */
-    .loader-overlay::before {
-      content: '';
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      background: var(--primary);
-      filter: blur(100px);
-      opacity: 0.15;
-      animation: pulse 3s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.1; transform: scale(1); }
-      50% { opacity: 0.2; transform: scale(1.3); }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="app-wrapper">
-    <div class="loader-overlay" id="loader">
-      <div class="spinner-box">
-        <div class="spinner"></div>
-      </div>
-      <div class="loading-status" id="status-text">FaxGer Initializing...</div>
+      <p style="font-family: sans-serif; color: #555;">Loading FaxGer...</p>
     </div>
 
     <iframe
-      id="main-app"
-      src="https://script.google.com/macros/s/AKfycbyH2dt2M5xDJVOavth-UwS3xvOjAScMhvtBBHwYuWI0XtrgDQmxaLljrc4AaY0ukS-h/exec?p=home"
-      title="FaxGer Global Logistics Dashboard"
-      allow="geolocation; camera; clipboard-write"
-      loading="eager">
+      id="faxger-frame"
+      src=""
+      title="FaxGer Global Logistics"
+      onload="hideLoader()"
+      allowfullscreen>
     </iframe>
   </div>
 
   <script>
-    const iframe = document.getElementById('main-app');
-    const loader = document.getElementById('loader');
-    const statusText = document.getElementById('status-text');
+    // আপনার Deployment URL এখানে বসান
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbyH2dt2M5xDJVOavth-UwS3xvOjAScMhvtBBHwYuWI0XtrgDQmxaLljrc4AaY0ukS-h/exec";
 
-    // 1. Smooth Transition Logic
-    iframe.onload = function() {
-      statusText.innerText = "Syncing with Server...";
-      
-      setTimeout(() => {
-        iframe.classList.add('loaded');
-        loader.classList.add('hidden');
-      }, 800);
-    };
+    // URL থেকে প্যারামিটার ধরা
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('p') || 'home';
 
-    // 2. Network Check
-    window.addEventListener('offline', () => {
-      statusText.innerText = "Offline - Check Connection";
+    // আইফ্রেম সোর্স আপডেট
+    document.getElementById('faxger-frame').src = BASE_URL + "?p=" + page;
+
+    function hideLoader() {
+      document.getElementById('loader').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
       statusText.style.color = "#ff4757";
     });
 
