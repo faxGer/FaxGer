@@ -819,15 +819,15 @@
     </div>
   </footer>
 
- <script>
+<script>
     const iframe = document.getElementById('main-app');
     const loader = document.getElementById('loader');
     const statusText = document.getElementById('status-text');
     let fallbackTimer = null;
     let explicitLoadInitiated = false;
 
-    // আইফ্রেমের সিকিউরিটি পলিসি ডাইনামিকালি সেট করা হলো
-    iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads');
+    // আইফ্রেমের সিকিউরিটি পলিসি ডাইনামিকালি সেট করা হলো (allow-top-navigation যুক্ত করা হয়েছে)
+    iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
     iframe.setAttribute('allow', 'geolocation; microphone; camera; clipboard-write;');
 
     // ১. টু-вей ক্রস-অরিজিন মেসেজিং ইঞ্জিন
@@ -885,8 +885,8 @@
 
     // ৩. একটিভ রেজোলিউশন এক্সিকিউশন ফেজ (সরাসরি ফিক্সড URL লোড)
     (function() {
-      // এখানে আপনার গুগল ম্যাক্রো স্ক্রিপ্টের মূল URL-টি দেওয়া আছে (কোনো প্যারামিটার ছাড়া)
-      const targetUrl = "https://script.google.com/macros/s/AKfycbydjehJj-L7bP8Kehn9HOTuv9Du5ZU2ixWc-qWduQvml1Z19sHkdmLNLk1f588x8dO_/exec?p=home";
+      // এখানে আপনার গুগল ম্যাক্রো স্ক্রিপ্টের মূল URL-টি দেওয়া আছে (কোনো প্যারামিটার ছাড়া)
+      const targetUrl = "https://script.google.com/macros/s/AKfycbydjehJj-L7bP8Kehn9HOTuv9Du5ZU2ixWc-qWduQvml1Z19sHkdmLNLk1f588x8dO_/exec?p+home";
       
       // লোড প্রসেস ট্রিগার
       explicitLoadInitiated = true;
