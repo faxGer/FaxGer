@@ -1,13 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="application-name" content="FaxGer Express">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FaxGer">
     <title>FaxGer Express</title>
 
-    <!-- দ্রুত লোডের জন্য আগে থেকেই সংযোগ তৈরি -->
+    <!-- Tab / Window title bar logo (Google Drive PNG) -->
+    <link id="fav" rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s64">
+    <link id="touch" rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s180">
+
+    <!-- Faster loading -->
     <link rel="preconnect" href="https://script.google.com" crossorigin>
     <link rel="dns-prefetch" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
     <link rel="dns-prefetch" href="https://ssl.gstatic.com">
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
@@ -44,6 +56,12 @@
         #loader.hidden {
             opacity: 0;
             pointer-events: none;
+        }
+        #logo {
+            width: 84px;
+            height: 84px;
+            object-fit: contain;
+            margin-bottom: 18px;
         }
         .spinner {
             width: 50px;
@@ -90,11 +108,47 @@
         #main-app.loaded {
             opacity: 1;
         }
+        /* Install App বাটন (ছোট, বন্ধ করা যায়) */
+        #install-box {
+            display: none;
+            position: fixed;
+            left: 14px;
+            bottom: 14px;
+            z-index: 1000;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #c3ccdb;
+            border-radius: 999px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+            overflow: hidden;
+        }
+        #install-box.show {
+            display: flex;
+        }
+        #install-btn {
+            border: 0;
+            background: var(--primary);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 9px 16px;
+            cursor: pointer;
+        }
+        #install-x {
+            border: 0;
+            background: #fff;
+            color: #555;
+            font-size: 20px;
+            line-height: 1;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <div id="loader">
+        <img id="logo" alt="FaxGer" src="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s256" referrerpolicy="no-referrer" onerror="this.style.display='none'">
         <div class="spinner"></div>
         <div id="status-text">Loading application...</div>
         <button id="retry-btn" type="button">Retry</button>
@@ -102,15 +156,26 @@
 
     <iframe id="main-app" title="FaxGer Global Logistics" loading="eager"></iframe>
 
+    <div id="install-box">
+        <button id="install-btn" type="button">&#11015; Install App</button>
+        <button id="install-x" type="button" aria-label="Close">&times;</button>
+    </div>
+
     <script>
     (function () {
-        // ===== সেটিংস =====
+        // ===== Settings =====
         var BASE_URL = "https://script.google.com/macros/s/AKfycbyR8bmTqg5_L6CdVYZHz5oTse6GKHREM92rDXAjQlF0IHMVrDaoGjOutzypjmB4QbxN/exec";
-        // মূল app এ "app_ready" কোড বসালে এটা true করুন (নিচের নির্দেশনা দেখুন)। না বসালে false থাকুক।
-        var APP_SENDS_READY = false;
-        var SHELL_WAIT = 1500;     // APP_SENDS_READY=false হলে: iframe লোডের এতক্ষণ পর loader সরবে (ms)
-        var READY_MAX = 8000;      // APP_SENDS_READY=true হলে: app_ready না এলে সর্বোচ্চ এতক্ষণ পর loader সরবে (ms)
-        var SLOW_AFTER = 12000;    // এর মধ্যে কিছু না হলে Retry বাটন দেখাবে (ms)
+        var LOGO_ID = "1wuovCUooF2nOBUhbe_P23K1-xeldjw7a";
+        var APP_SENDS_READY = false;   // মূল app এ "app_ready" কোড বসালে true করুন
+        var SHELL_WAIT = 1500;         // APP_SENDS_READY=false হলে iframe লোডের এতক্ষণ পর loader সরবে (ms)
+        var READY_MAX = 8000;          // APP_SENDS_READY=true হলে app_ready না এলে সর্বোচ্চ অপেক্ষা (ms)
+        var SLOW_AFTER = 12000;        // এর মধ্যে কিছু না হলে Retry বাটন (ms)
+
+        var LOGO_URLS = [
+            "https://lh3.googleusercontent.com/d/" + LOGO_ID + "=s512",
+            "https://drive.google.com/thumbnail?id=" + LOGO_ID + "&sz=w512",
+            "https://drive.google.com/uc?export=view&id=" + LOGO_ID
+        ];
 
         var iframe = document.getElementById('main-app');
         var loader = document.getElementById('loader');
@@ -118,7 +183,133 @@
         var retryBtn = document.getElementById('retry-btn');
         var shown = false, started = false, shellTimer = null, slowTimer = null;
 
-        // আইফ্রেমের সিকিউরিটি পলিসি (src সেট করার আগেই)
+        // ===== Install App (PWA) =====
+        var deferredPrompt = null;
+        var installBox = document.getElementById('install-box');
+        function isStandalone() {
+            return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+        }
+        function installDismissed() {
+            try { return localStorage.getItem('faxger_install_dismissed') === '1'; } catch (e) { return false; }
+        }
+        // এই listener আগে বসানো দরকার, যাতে event মিস না হয়
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!isStandalone() && !installDismissed()) installBox.classList.add('show');
+        });
+        window.addEventListener('appinstalled', function () {
+            deferredPrompt = null;
+            installBox.classList.remove('show');
+        });
+        document.getElementById('install-btn').addEventListener('click', function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function () {
+                deferredPrompt = null;
+                installBox.classList.remove('show');
+            });
+        });
+        document.getElementById('install-x').addEventListener('click', function () {
+            installBox.classList.remove('show');
+            try { localStorage.setItem('faxger_install_dismissed', '1'); } catch (e) {}
+        });
+
+        // ===== Logo থেকে App Icon তৈরি + Manifest =====
+        function makeIcon(img, size, pad) {
+            var c = document.createElement('canvas');
+            c.width = c.height = size;
+            var x = c.getContext('2d');
+            x.fillStyle = '#ffffff';
+            x.fillRect(0, 0, size, size);
+            var box = size * (1 - 2 * pad);
+            var r = Math.min(box / img.naturalWidth, box / img.naturalHeight);
+            var w = img.naturalWidth * r, h = img.naturalHeight * r;
+            x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+            return c.toDataURL('image/png');
+        }
+        function fallbackIcon(size) {
+            var c = document.createElement('canvas');
+            c.width = c.height = size;
+            var x = c.getContext('2d');
+            x.fillStyle = '#007bff';
+            x.fillRect(0, 0, size, size);
+            x.fillStyle = '#ffffff';
+            x.font = 'bold ' + Math.round(size * 0.42) + 'px Arial';
+            x.textAlign = 'center';
+            x.textBaseline = 'middle';
+            x.fillText('FG', size / 2, size / 2);
+            return c.toDataURL('image/png');
+        }
+        function loadLogo(i, done) {
+            if (i >= LOGO_URLS.length) return done(null);
+            var img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.referrerPolicy = 'no-referrer';
+            img.onload = function () {
+                if (img.naturalWidth < 32) return loadLogo(i + 1, done);
+                done(img);
+            };
+            img.onerror = function () { loadLogo(i + 1, done); };
+            img.src = LOGO_URLS[i];
+        }
+        function setIconLink(id, href) {
+            var l = document.getElementById(id);
+            if (l && href) l.href = href;
+        }
+        function buildManifest(i192, i512, iMask) {
+            if (!/^https?:$/.test(location.protocol)) return;
+            var start = location.origin + location.pathname;
+            var scope = location.origin + location.pathname.replace(/[^\/]*$/, '');
+            var m = {
+                id: start,
+                name: 'FaxGer Express',
+                short_name: 'FaxGer',
+                description: 'FaxGer Global Logistics',
+                lang: 'en',
+                dir: 'ltr',
+                start_url: start,
+                scope: scope,
+                display: 'standalone',
+                background_color: '#ffffff',
+                theme_color: '#ffffff',
+                icons: [
+                    { src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+                    { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+                    { src: iMask, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+                ]
+            };
+            var old = document.getElementById('manifest-link');
+            if (old) old.parentNode.removeChild(old);
+            var link = document.createElement('link');
+            link.id = 'manifest-link';
+            link.rel = 'manifest';
+            link.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+            document.head.appendChild(link);
+        }
+        function setupApp() {
+            loadLogo(0, function (img) {
+                var i192, i512, iMask;
+                try {
+                    if (!img) throw new Error('no logo');
+                    i192 = makeIcon(img, 192, 0.04);
+                    i512 = makeIcon(img, 512, 0.04);
+                    iMask = makeIcon(img, 512, 0.2);
+                } catch (e) {
+                    i192 = fallbackIcon(192);
+                    i512 = fallbackIcon(512);
+                    iMask = i512;
+                }
+                setIconLink('fav', i192);
+                setIconLink('touch', i192);
+                buildManifest(i192, i512, iMask);
+            });
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(function () {});   // sw.js না থাকলেও সমস্যা নেই
+            }
+        }
+
+        // ===== iframe security / permissions =====
         iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
         // Camera (Barcode Scan), Microphone, Location, Clipboard, Fullscreen, Beep sound
         iframe.setAttribute('allow', 'camera *; microphone *; geolocation *; clipboard-read *; clipboard-write *; fullscreen *; autoplay *');
@@ -142,7 +333,7 @@
 
         function showSlow() {
             if (shown) return;
-            statusText.textContent = 'লোড হতে বেশি সময় লাগছে...';
+            statusText.textContent = 'Taking longer than usual...';
             statusText.style.color = '#ff4757';
             retryBtn.classList.add('show');
         }
@@ -161,7 +352,6 @@
             iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + '_nc=' + Date.now();
         }
 
-        // iframe এর খোলস লোড হলে (ভেতরের app তখনও আসতে পারে)
         iframe.addEventListener('load', function () {
             if (!started || shown) return;
             statusText.textContent = 'FaxGer Global Logistics';
@@ -169,7 +359,6 @@
             shellTimer = setTimeout(showApp, APP_SENDS_READY ? READY_MAX : SHELL_WAIT);
         });
 
-        // ভেতরের app থেকে মেসেজ (Google এর sandbox origin সহ)
         window.addEventListener('message', function (event) {
             if (!trusted(event.origin)) return;
             var data = event.data;
@@ -186,19 +375,19 @@
             statusText.style.color = '#ff4757';
         });
 
-        // ইন্টারনেট ফিরলে, app এখনও না এসে থাকলে আবার লোড করবে
         window.addEventListener('online', function () {
             statusText.style.color = '#333';
             statusText.textContent = 'Reconnecting...';
             if (!shown) load();
         });
 
-        // আইওএস (iOS) ওয়েবকিট স্কেল মিটিগেশন
+        // iOS WebKit scale mitigation
         document.body.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
 
-        load();
+        load();        // আগে app লোড শুরু
+        setupApp();    // তারপর logo / manifest (app লোডকে আটকায় না)
     })();
     </script>
 
