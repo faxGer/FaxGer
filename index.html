@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
     <meta http-equiv="Content-Language" content="en">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#0b1e3f">
     <meta name="application-name" content="FaxGer Express">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="FaxGer">
     <title>FaxGer Express</title>
 
-    <!-- Tab / Window title bar logo (Google Drive PNG) -->
-    <link id="fav" rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s64">
-    <link id="touch" rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s180">
+    <!-- App Install: আসল ফাইল (না পেলে নিচের JS নিজে বানিয়ে নেবে) -->
+    <link id="manifest-link" rel="manifest" href="manifest.webmanifest">
+    <link id="fav" rel="icon" type="image/png" href="icon-192.png">
+    <link id="touch" rel="apple-touch-icon" href="icon-192.png">
 
     <!-- Faster loading -->
     <link rel="preconnect" href="https://script.google.com" crossorigin>
@@ -29,180 +30,521 @@
     <style>
         :root {
             --primary: #007bff;
+            --navy: #0b1e3f;
         }
+        * { box-sizing: border-box; }
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f4f7f6;
         }
+
+        /* ================= Loader ================= */
         #loader {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: 0;
             z-index: 999;
-            transition: opacity 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+            background:
+                radial-gradient(1200px 700px at 15% -10%, #14418a 0%, transparent 60%),
+                radial-gradient(900px 600px at 110% 110%, #0f5fb8 0%, transparent 55%),
+                linear-gradient(160deg, #0b1e3f, #071530);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity .7s ease, visibility 0s linear 0s;
         }
         #loader.hidden {
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
+            transition: opacity .7s ease, visibility 0s linear .7s;
         }
-        #logo {
+        #loader .bg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: .45;
+            animation: floaty 14s ease-in-out infinite;
+        }
+        .o1 { width: 340px; height: 340px; background: #1d6fe0; top: -90px; left: -80px; }
+        .o2 { width: 300px; height: 300px; background: #0ea5e9; bottom: -90px; right: -70px; animation-delay: -6s; }
+        .grid {
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+            background-size: 44px 44px;
+            -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 70%);
+            mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 70%);
+        }
+        @keyframes floaty {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 24px); }
+        }
+
+        .stage {
+            position: relative;
+            z-index: 2;
+            width: min(88vw, 360px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: rise .8s cubic-bezier(.2,.8,.2,1) both;
+        }
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .emblem {
+            position: relative;
+            width: 132px;
+            height: 132px;
+            display: grid;
+            place-items: center;
+        }
+        .ring {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            animation: spin 1.8s linear infinite;
+        }
+        .ring .track { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 3; }
+        .ring .arc {
+            fill: none;
+            stroke: url(#grad);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-dasharray: 90 262;
+        }
+        .pulse {
+            position: absolute;
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: rgba(56,189,248,.35);
+            animation: pulse 2.2s ease-out infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(.9); opacity: .7; }
+            100% { transform: scale(1.55); opacity: 0; }
+        }
+        .tile {
+            position: relative;
             width: 84px;
             height: 84px;
-            object-fit: contain;
-            margin-bottom: 18px;
+            border-radius: 22px;
+            background: #ffffff;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 0 6px rgba(255,255,255,.08);
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+            opacity: 0;
+            transition: opacity .5s ease;
+        }
+        .tile img.ok { opacity: 1; }
+        .tile .mono {
+            position: absolute;
+            font-weight: 800;
+            font-size: 28px;
+            letter-spacing: 1px;
+            color: #0b3a8a;
+        }
+        .tile.has .mono { display: none; }
+
+        .brand {
+            margin: 26px 0 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: .4px;
+        }
+        .brand span {
+            display: block;
+            margin-top: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #9cc4ff;
         }
         #status-text {
-            margin-top: 20px;
-            font-size: 16px;
-            color: #333;
+            margin-top: 24px;
+            min-height: 20px;
+            padding: 0 12px;
+            font-size: 14px;
             font-weight: 500;
-            text-align: center;
-            padding: 0 16px;
+            color: #dbe8ff;
+            transition: opacity .16s ease;
         }
+        .bar {
+            position: relative;
+            width: 100%;
+            height: 6px;
+            margin-top: 14px;
+            border-radius: 99px;
+            background: rgba(255,255,255,.14);
+            overflow: hidden;
+        }
+        #bar-fill {
+            position: absolute;
+            top: 0; bottom: 0; left: 0;
+            width: 0;
+            border-radius: 99px;
+            background: linear-gradient(90deg, #38bdf8, #3b82f6, #38bdf8);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s linear infinite;
+            transition: width .35s ease;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #9cb4d8;
+        }
+        .steps {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+        .steps i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.2);
+            transition: background .3s ease, transform .3s ease;
+        }
+        .steps i.on { background: #38bdf8; transform: scale(1.25); }
         #retry-btn {
             display: none;
-            margin-top: 16px;
-            padding: 10px 26px;
+            margin-top: 20px;
+            padding: 11px 30px;
             font-size: 15px;
-            font-weight: 600;
-            color: #fff;
-            background: var(--primary);
+            font-weight: 700;
+            color: #0b1e3f;
+            background: #ffffff;
             border: 0;
-            border-radius: 8px;
+            border-radius: 999px;
             cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,.3);
         }
-        #retry-btn.show {
-            display: inline-block;
+        #retry-btn.show { display: inline-block; }
+        .foot {
+            position: absolute;
+            left: 0; right: 0;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            z-index: 2;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: .8px;
+            color: #7f9bc7;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+            .orb, .pulse, #bar-fill, .stage { animation: none; }
+            .ring { animation-duration: 6s; }
         }
+
+        /* ================= App iframe ================= */
         #main-app {
             width: 100%;
             height: 100%;
             border: none;
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity .5s ease;
         }
-        #main-app.loaded {
-            opacity: 1;
-        }
-        /* Install App বাটন (ছোট, বন্ধ করা যায়) */
+        #main-app.loaded { opacity: 1; }
+
+        /* ================= Install / Hint ================= */
         #install-box {
             display: none;
             position: fixed;
             left: 14px;
-            bottom: 14px;
+            bottom: calc(14px + env(safe-area-inset-bottom, 0px));
             z-index: 1000;
             align-items: center;
             background: #ffffff;
             border: 1px solid #c3ccdb;
             border-radius: 999px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+            box-shadow: 0 4px 14px rgba(0,0,0,.25);
             overflow: hidden;
         }
-        #install-box.show {
-            display: flex;
-        }
+        #install-box.show { display: flex; }
         #install-btn {
             border: 0;
             background: var(--primary);
             color: #fff;
             font-size: 14px;
             font-weight: 600;
-            padding: 9px 16px;
+            padding: 10px 16px;
             cursor: pointer;
         }
-        #install-x {
+        #install-x, #hint-x {
             border: 0;
-            background: #fff;
+            background: transparent;
             color: #555;
             font-size: 20px;
             line-height: 1;
             padding: 6px 12px;
             cursor: pointer;
         }
+        #hint-box {
+            display: none;
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            z-index: 1000;
+            align-items: center;
+            gap: 4px;
+            max-width: 460px;
+            margin: 0 auto;
+            padding: 10px 6px 10px 16px;
+            background: #0b1e3f;
+            color: #fff;
+            font-size: 13.5px;
+            line-height: 1.4;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        }
+        #hint-box.show { display: flex; }
+        #hint-text { flex: 1; }
+        #hint-x { color: #fff; }
     </style>
 </head>
-<body>
+<body class="notranslate">
 
-    <div id="loader">
-        <img id="logo" alt="FaxGer" src="https://lh3.googleusercontent.com/d/1wuovCUooF2nOBUhbe_P23K1-xeldjw7a=s256" referrerpolicy="no-referrer" onerror="this.style.display='none'">
-        <div class="spinner"></div>
-        <div id="status-text">Loading application...</div>
-        <button id="retry-btn" type="button">Retry</button>
+    <div id="loader" role="status" aria-live="polite">
+        <div class="bg" aria-hidden="true">
+            <span class="orb o1"></span>
+            <span class="orb o2"></span>
+            <span class="grid"></span>
+        </div>
+
+        <div class="stage">
+            <div class="emblem">
+                <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#38bdf8"/>
+                            <stop offset="1" stop-color="#3b82f6"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="track" cx="60" cy="60" r="56"/>
+                    <circle class="arc" cx="60" cy="60" r="56"/>
+                </svg>
+                <span class="pulse"></span>
+                <div class="tile" id="tile">
+                    <span class="mono">FG</span>
+                    <img id="logo" alt="FaxGer logo">
+                </div>
+            </div>
+
+            <h1 class="brand">FaxGer Express<span>Global Logistics</span></h1>
+
+            <div id="status-text">Starting up...</div>
+            <div class="bar"><i id="bar-fill"></i></div>
+            <div class="meta"><span>Please wait</span><span id="pct">0%</span></div>
+            <div class="steps" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <button id="retry-btn" type="button">Retry</button>
+        </div>
+
+        <div class="foot">&#128274; SECURE CONNECTION &bull; FAXGER GLOBAL LOGISTICS</div>
     </div>
 
     <iframe id="main-app" title="FaxGer Global Logistics" loading="eager"></iframe>
 
-    <div id="install-box">
+    <div id="install-box" role="dialog" aria-label="Install app">
         <button id="install-btn" type="button">&#11015; Install App</button>
         <button id="install-x" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div id="hint-box" role="note">
+        <span id="hint-text"></span>
+        <button id="hint-x" type="button" aria-label="Close">&times;</button>
     </div>
 
     <script>
     (function () {
-        // ===== Settings =====
+        'use strict';
+
+        // ===================== Settings =====================
         var BASE_URL = "https://script.google.com/macros/s/AKfycbyR8bmTqg5_L6CdVYZHz5oTse6GKHREM92rDXAjQlF0IHMVrDaoGjOutzypjmB4QbxN/exec";
         var LOGO_ID = "1wuovCUooF2nOBUhbe_P23K1-xeldjw7a";
-        var APP_SENDS_READY = false;   // মূল app এ "app_ready" কোড বসালে true করুন
-        var SHELL_WAIT = 1500;         // APP_SENDS_READY=false হলে iframe লোডের এতক্ষণ পর loader সরবে (ms)
-        var READY_MAX = 8000;          // APP_SENDS_READY=true হলে app_ready না এলে সর্বোচ্চ অপেক্ষা (ms)
-        var SLOW_AFTER = 12000;        // এর মধ্যে কিছু না হলে Retry বাটন (ms)
+        var APP_SENDS_READY = false;  // মূল app এ "app_ready" কোড বসালে true করুন (সবচেয়ে ভালো)
+        var SHELL_WAIT = 3500;        // APP_SENDS_READY=false হলে: iframe লোডের এতক্ষণ পর loader সরবে (ms)
+        var READY_MAX = 15000;        // APP_SENDS_READY=true হলে: app_ready না এলে সর্বোচ্চ অপেক্ষা (ms)
+        var SLOW_AFTER = 25000;       // এর মধ্যে কিছু না হলে Retry বাটন (ms)
+        var MIN_SHOW = 1200;          // loader কমপক্ষে এতক্ষণ দেখাবে (ms)
+        var FINISH_DELAY = 500;       // 100% দেখানোর পর সরার আগে বিরতি (ms)
 
-        var LOGO_URLS = [
+        var DRIVE_LOGOS = [
             "https://lh3.googleusercontent.com/d/" + LOGO_ID + "=s512",
             "https://drive.google.com/thumbnail?id=" + LOGO_ID + "&sz=w512",
             "https://drive.google.com/uc?export=view&id=" + LOGO_ID
         ];
+        var STAGES = [
+            [0,  'Connecting securely...'],
+            [25, 'Loading your workspace...'],
+            [55, 'Preparing dashboard...'],
+            [80, 'Almost ready...']
+        ];
 
-        var iframe = document.getElementById('main-app');
-        var loader = document.getElementById('loader');
-        var statusText = document.getElementById('status-text');
-        var retryBtn = document.getElementById('retry-btn');
-        var shown = false, started = false, shellTimer = null, slowTimer = null;
+        // ===================== Elements / State =====================
+        var $ = function (id) { return document.getElementById(id); };
+        var iframe = $('main-app'), loader = $('loader'), statusText = $('status-text'),
+            retryBtn = $('retry-btn'), barFill = $('bar-fill'), pctEl = $('pct'),
+            tile = $('tile'), logoEl = $('logo'), dots = loader.querySelectorAll('.steps i');
+        var shown = false, started = false, slowShown = false, shellLoaded = false,
+            runId = 0, startAt = Date.now(), shellTimer = null, slowTimer = null,
+            progTimer = null, prog = 0, stageIdx = -1;
 
-        // ===== Install App (PWA) =====
+        // ===================== Loader helpers =====================
+        function setStatus(t, color) {
+            statusText.style.opacity = 0;
+            setTimeout(function () {
+                statusText.textContent = t;
+                statusText.style.color = color || '';
+                statusText.style.opacity = 1;
+            }, 160);
+        }
+        function render() {
+            barFill.style.width = prog.toFixed(1) + '%';
+            pctEl.textContent = Math.floor(prog) + '%';
+            var idx = 0, i;
+            for (i = 0; i < STAGES.length; i++) if (prog >= STAGES[i][0]) idx = i;
+            for (i = 0; i < dots.length; i++) dots[i].className = i <= idx ? 'on' : '';
+            if (idx !== stageIdx && !shown && !slowShown && navigator.onLine !== false) {
+                stageIdx = idx;
+                setStatus(STAGES[idx][1]);
+            }
+        }
+        function showApp() {
+            if (shown) return;
+            shown = true;
+            var my = runId;
+            clearTimeout(shellTimer);
+            clearTimeout(slowTimer);
+            clearInterval(progTimer);
+            retryBtn.classList.remove('show');
+            prog = 100; render();
+            for (var i = 0; i < dots.length; i++) dots[i].className = 'on';
+            setStatus('Ready');
+            var wait = Math.max(0, MIN_SHOW - (Date.now() - startAt)) + FINISH_DELAY;
+            setTimeout(function () {
+                if (my !== runId) return;
+                iframe.classList.add('loaded');
+                loader.classList.add('hidden');
+            }, wait);
+        }
+        function showSlow() {
+            if (shown) return;
+            slowShown = true;
+            setStatus('Taking longer than usual...', '#ffb4b4');
+            retryBtn.classList.add('show');
+        }
+        function load() {
+            runId++;
+            shown = false; started = true; slowShown = false; shellLoaded = false;
+            startAt = Date.now();
+            clearTimeout(shellTimer); clearTimeout(slowTimer); clearInterval(progTimer);
+            retryBtn.classList.remove('show');
+            iframe.classList.remove('loaded');
+            loader.classList.remove('hidden');
+            prog = 0; stageIdx = -1; render();
+            progTimer = setInterval(function () {
+                if (shown) return;
+                var cap = shellLoaded ? 94 : 78;   // আনুমানিক অগ্রগতি (আসল ডাউনলোড মাপা নয়)
+                prog += (cap - prog) * 0.04 + 0.08;
+                if (prog > cap) prog = cap;
+                render();
+            }, 120);
+            slowTimer = setTimeout(showSlow, SLOW_AFTER);
+            iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + '_nc=' + Date.now();
+        }
+
+        // ===================== iframe security / permissions =====================
+        iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
+        // Camera (Barcode Scan), Microphone, Location, Clipboard, Fullscreen, Beep sound
+        iframe.setAttribute('allow', 'camera *; microphone *; geolocation *; clipboard-read *; clipboard-write *; fullscreen *; autoplay *');
+
+        function trusted(origin) {
+            try {
+                var h = new URL(origin).hostname;
+                return h === 'script.google.com' || /(^|\.)googleusercontent\.com$/.test(h);
+            } catch (e) { return false; }
+        }
+
+        iframe.addEventListener('load', function () {
+            if (!started || shown) return;
+            shellLoaded = true;
+            prog = Math.max(prog, 55);
+            clearTimeout(shellTimer);
+            shellTimer = setTimeout(showApp, APP_SENDS_READY ? READY_MAX : SHELL_WAIT);
+        });
+
+        window.addEventListener('message', function (event) {
+            if (!trusted(event.origin)) return;
+            var data = event.data;
+            try { if (typeof data === 'string') data = JSON.parse(data); } catch (e) { return; }
+            if (!data || typeof data !== 'object') return;
+            if (data.action === 'app_ready') showApp();
+            if (data.action === 'sync_complete' && !shown) setStatus('Data synced safely');
+        });
+
+        retryBtn.addEventListener('click', load);
+        window.addEventListener('offline', function () { setStatus('Offline - check your connection', '#ffb4b4'); });
+        window.addEventListener('online', function () {
+            setStatus('Reconnecting...');
+            if (!shown) load();
+        });
+        document.body.addEventListener('gesturestart', function (e) { e.preventDefault(); });   // iOS scale mitigation
+
+        // ===================== Install App (PWA) =====================
+        var UA = navigator.userAgent || '';
+        var isIOS = /iphone|ipad|ipod/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isAndroid = /android/i.test(UA);
+        var inApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|Messenger|; wv\)/i.test(UA);
         var deferredPrompt = null;
-        var installBox = document.getElementById('install-box');
+        var installBox = $('install-box'), hintBox = $('hint-box'), hintText = $('hint-text');
+
         function isStandalone() {
             return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
         }
-        function installDismissed() {
-            try { return localStorage.getItem('faxger_install_dismissed') === '1'; } catch (e) { return false; }
-        }
+        function getFlag(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
+        function setFlag(k) { try { localStorage.setItem(k, '1'); } catch (e) {} }
+
         // এই listener আগে বসানো দরকার, যাতে event মিস না হয়
         window.addEventListener('beforeinstallprompt', function (e) {
             e.preventDefault();
             deferredPrompt = e;
-            if (!isStandalone() && !installDismissed()) installBox.classList.add('show');
+            hintBox.classList.remove('show');
+            if (!isStandalone() && !getFlag('faxger_install_dismissed')) installBox.classList.add('show');
         });
         window.addEventListener('appinstalled', function () {
             deferredPrompt = null;
             installBox.classList.remove('show');
+            hintBox.classList.remove('show');
         });
-        document.getElementById('install-btn').addEventListener('click', function () {
+        $('install-btn').addEventListener('click', function () {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(function () {
@@ -210,12 +552,47 @@
                 installBox.classList.remove('show');
             });
         });
-        document.getElementById('install-x').addEventListener('click', function () {
+        $('install-x').addEventListener('click', function () {
             installBox.classList.remove('show');
-            try { localStorage.setItem('faxger_install_dismissed', '1'); } catch (e) {}
+            setFlag('faxger_install_dismissed');
         });
+        $('hint-x').addEventListener('click', function () {
+            hintBox.classList.remove('show');
+            setFlag('faxger_hint_dismissed');
+        });
+        function showHint(t) {
+            if (isStandalone() || getFlag('faxger_hint_dismissed')) return;
+            hintText.textContent = t;
+            hintBox.classList.add('show');
+        }
+        // Install বাটন না এলে (iPhone / in-app browser / Chrome menu) নির্দেশনা দেখাবে
+        setTimeout(function () {
+            if (isStandalone() || deferredPrompt) return;
+            if (inApp) showHint('To install the app, open this page in Chrome.');
+            else if (isIOS) showHint('To install: tap the Share button, then "Add to Home Screen".');
+            else if (isAndroid) showHint('To install: tap the \u22EE menu, then "Install app" or "Add to Home screen".');
+        }, 9000);
 
-        // ===== Logo থেকে App Icon তৈরি + Manifest =====
+        // ===================== Logo / Icons / Manifest =====================
+        function exists(url, kind) {
+            return fetch(url, { cache: 'no-cache' }).then(function (r) {
+                if (!r.ok) return false;
+                if (kind === 'json') return r.json().then(function (m) { return !!(m && m.icons); }, function () { return false; });
+                return (r.headers.get('content-type') || '').toLowerCase().indexOf('image/') === 0;
+            }).catch(function () { return false; });
+        }
+        function loadLogo(i, urls, done) {
+            if (i >= urls.length) return done(null);
+            var img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.referrerPolicy = 'no-referrer';
+            img.onload = function () {
+                if (img.naturalWidth < 32) return loadLogo(i + 1, urls, done);
+                done(img);
+            };
+            img.onerror = function () { loadLogo(i + 1, urls, done); };
+            img.src = urls[i];
+        }
         function makeIcon(img, size, pad) {
             var c = document.createElement('canvas');
             c.width = c.height = size;
@@ -232,7 +609,7 @@
             var c = document.createElement('canvas');
             c.width = c.height = size;
             var x = c.getContext('2d');
-            x.fillStyle = '#007bff';
+            x.fillStyle = '#0b3a8a';
             x.fillRect(0, 0, size, size);
             x.fillStyle = '#ffffff';
             x.font = 'bold ' + Math.round(size * 0.42) + 'px Arial';
@@ -241,20 +618,8 @@
             x.fillText('FG', size / 2, size / 2);
             return c.toDataURL('image/png');
         }
-        function loadLogo(i, done) {
-            if (i >= LOGO_URLS.length) return done(null);
-            var img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.referrerPolicy = 'no-referrer';
-            img.onload = function () {
-                if (img.naturalWidth < 32) return loadLogo(i + 1, done);
-                done(img);
-            };
-            img.onerror = function () { loadLogo(i + 1, done); };
-            img.src = LOGO_URLS[i];
-        }
         function setIconLink(id, href) {
-            var l = document.getElementById(id);
+            var l = $(id);
             if (l && href) l.href = href;
         }
         function buildManifest(i192, i512, iMask) {
@@ -262,25 +627,17 @@
             var start = location.origin + location.pathname;
             var scope = location.origin + location.pathname.replace(/[^\/]*$/, '');
             var m = {
-                id: start,
-                name: 'FaxGer Express',
-                short_name: 'FaxGer',
-                description: 'FaxGer Global Logistics',
-                lang: 'en',
-                dir: 'ltr',
-                start_url: start,
-                scope: scope,
-                display: 'standalone',
-                background_color: '#ffffff',
-                theme_color: '#ffffff',
+                id: start, name: 'FaxGer Express', short_name: 'FaxGer', description: 'FaxGer Global Logistics',
+                lang: 'en', dir: 'ltr', start_url: start, scope: scope, display: 'standalone',
+                background_color: '#0b1e3f', theme_color: '#0b1e3f',
                 icons: [
                     { src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' },
                     { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' },
                     { src: iMask, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
                 ]
             };
-            var old = document.getElementById('manifest-link');
-            if (old) old.parentNode.removeChild(old);
+            var old = $('manifest-link');
+            if (old && old.parentNode) old.parentNode.removeChild(old);
             var link = document.createElement('link');
             link.id = 'manifest-link';
             link.rel = 'manifest';
@@ -288,103 +645,34 @@
             document.head.appendChild(link);
         }
         function setupApp() {
-            loadLogo(0, function (img) {
-                var i192, i512, iMask;
-                try {
-                    if (!img) throw new Error('no logo');
-                    i192 = makeIcon(img, 192, 0.04);
-                    i512 = makeIcon(img, 512, 0.04);
-                    iMask = makeIcon(img, 512, 0.2);
-                } catch (e) {
-                    i192 = fallbackIcon(192);
-                    i512 = fallbackIcon(512);
-                    iMask = i512;
-                }
-                setIconLink('fav', i192);
-                setIconLink('touch', i192);
-                buildManifest(i192, i512, iMask);
+            Promise.all([
+                exists('manifest.webmanifest', 'json'),
+                exists('icon-192.png', 'image'),
+                exists('icon-512.png', 'image')
+            ]).then(function (r) {
+                var staticOk = r[0] && r[1] && r[2];   // আসল ফাইল থাকলে সেগুলোই ব্যবহার হবে (মোবাইল Install এর জন্য সবচেয়ে ভালো)
+                var urls = (staticOk ? ['icon-512.png'] : []).concat(DRIVE_LOGOS);
+                loadLogo(0, urls, function (img) {
+                    if (img) { logoEl.src = img.src; logoEl.classList.add('ok'); tile.classList.add('has'); }
+                    if (staticOk) return;
+                    var i192, i512, iMask;
+                    try {
+                        if (!img) throw new Error('no logo');
+                        i192 = makeIcon(img, 192, 0.04);
+                        i512 = makeIcon(img, 512, 0.04);
+                        iMask = makeIcon(img, 512, 0.2);
+                    } catch (e) {
+                        i192 = fallbackIcon(192); i512 = fallbackIcon(512); iMask = i512;
+                    }
+                    setIconLink('fav', i192);
+                    setIconLink('touch', i192);
+                    buildManifest(i192, i512, iMask);
+                });
             });
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').catch(function () {});   // sw.js না থাকলেও সমস্যা নেই
             }
         }
-
-        // ===== iframe security / permissions =====
-        iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
-        // Camera (Barcode Scan), Microphone, Location, Clipboard, Fullscreen, Beep sound
-        iframe.setAttribute('allow', 'camera *; microphone *; geolocation *; clipboard-read *; clipboard-write *; fullscreen *; autoplay *');
-
-        function trusted(origin) {
-            try {
-                var h = new URL(origin).hostname;
-                return h === 'script.google.com' || /(^|\.)googleusercontent\.com$/.test(h);
-            } catch (e) { return false; }
-        }
-
-        function showApp() {
-            if (shown) return;
-            shown = true;
-            clearTimeout(shellTimer);
-            clearTimeout(slowTimer);
-            retryBtn.classList.remove('show');
-            iframe.classList.add('loaded');
-            loader.classList.add('hidden');
-        }
-
-        function showSlow() {
-            if (shown) return;
-            statusText.textContent = 'Taking longer than usual...';
-            statusText.style.color = '#ff4757';
-            retryBtn.classList.add('show');
-        }
-
-        function load() {
-            shown = false;
-            started = true;
-            clearTimeout(shellTimer);
-            clearTimeout(slowTimer);
-            retryBtn.classList.remove('show');
-            iframe.classList.remove('loaded');
-            loader.classList.remove('hidden');
-            statusText.textContent = 'Loading application...';
-            statusText.style.color = '#333';
-            slowTimer = setTimeout(showSlow, SLOW_AFTER);
-            iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + '_nc=' + Date.now();
-        }
-
-        iframe.addEventListener('load', function () {
-            if (!started || shown) return;
-            statusText.textContent = 'FaxGer Global Logistics';
-            clearTimeout(shellTimer);
-            shellTimer = setTimeout(showApp, APP_SENDS_READY ? READY_MAX : SHELL_WAIT);
-        });
-
-        window.addEventListener('message', function (event) {
-            if (!trusted(event.origin)) return;
-            var data = event.data;
-            try { if (typeof data === 'string') data = JSON.parse(data); } catch (e) { return; }
-            if (!data || typeof data !== 'object') return;
-            if (data.action === 'app_ready') showApp();
-            if (data.action === 'sync_complete') statusText.textContent = 'Data Synced Safely';
-        });
-
-        retryBtn.addEventListener('click', load);
-
-        window.addEventListener('offline', function () {
-            statusText.textContent = 'Offline - Check Connection';
-            statusText.style.color = '#ff4757';
-        });
-
-        window.addEventListener('online', function () {
-            statusText.style.color = '#333';
-            statusText.textContent = 'Reconnecting...';
-            if (!shown) load();
-        });
-
-        // iOS WebKit scale mitigation
-        document.body.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
-        });
 
         load();        // আগে app লোড শুরু
         setupApp();    // তারপর logo / manifest (app লোডকে আটকায় না)
