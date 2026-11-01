@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FaxGer Express</title>
+
+    <!-- দ্রুত লোডের জন্য আগে থেকেই সংযোগ তৈরি -->
+    <link rel="preconnect" href="https://script.google.com" crossorigin>
+    <link rel="dns-prefetch" href="https://script.google.com">
+    <link rel="dns-prefetch" href="https://ssl.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
     <style>
         :root {
             --primary: #007bff;
@@ -48,6 +58,23 @@
             font-size: 16px;
             color: #333;
             font-weight: 500;
+            text-align: center;
+            padding: 0 16px;
+        }
+        #retry-btn {
+            display: none;
+            margin-top: 16px;
+            padding: 10px 26px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary);
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #retry-btn.show {
+            display: inline-block;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -70,82 +97,109 @@
     <div id="loader">
         <div class="spinner"></div>
         <div id="status-text">Loading application...</div>
+        <button id="retry-btn" type="button">Retry</button>
     </div>
 
-    <iframe id="main-app"></iframe>
+    <iframe id="main-app" title="FaxGer Global Logistics" loading="eager"></iframe>
 
     <script>
-        const iframe = document.getElementById('main-app');
-        const loader = document.getElementById('loader');
-        const statusText = document.getElementById('status-text');
-        let fallbackTimer = null;
-        let explicitLoadInitiated = false;
+    (function () {
+        // ===== সেটিংস =====
+        var BASE_URL = "https://script.google.com/macros/s/AKfycbyR8bmTqg5_L6CdVYZHz5oTse6GKHREM92rDXAjQlF0IHMVrDaoGjOutzypjmB4QbxN/exec";
+        // মূল app এ "app_ready" কোড বসালে এটা true করুন (নিচের নির্দেশনা দেখুন)। না বসালে false থাকুক।
+        var APP_SENDS_READY = false;
+        var SHELL_WAIT = 1500;     // APP_SENDS_READY=false হলে: iframe লোডের এতক্ষণ পর loader সরবে (ms)
+        var READY_MAX = 8000;      // APP_SENDS_READY=true হলে: app_ready না এলে সর্বোচ্চ এতক্ষণ পর loader সরবে (ms)
+        var SLOW_AFTER = 12000;    // এর মধ্যে কিছু না হলে Retry বাটন দেখাবে (ms)
 
-        // আইফ্রেমের সিকিউরিটি পলিসি ডাইনামিকালি সেট করা হলো
+        var iframe = document.getElementById('main-app');
+        var loader = document.getElementById('loader');
+        var statusText = document.getElementById('status-text');
+        var retryBtn = document.getElementById('retry-btn');
+        var shown = false, started = false, shellTimer = null, slowTimer = null;
+
+        // আইফ্রেমের সিকিউরিটি পলিসি (src সেট করার আগেই)
         iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
-        iframe.setAttribute('allow', 'geolocation; microphone; camera; clipboard-write;');
+        // Camera (Barcode Scan), Microphone, Location, Clipboard, Fullscreen, Beep sound
+        iframe.setAttribute('allow', 'camera *; microphone *; geolocation *; clipboard-read *; clipboard-write *; fullscreen *; autoplay *');
 
-        // ১. টু-ওয়ে ক্রস-অরিজিন মেসেজিং ইঞ্জিন
-        window.addEventListener('message', function(event) {
-          if (!event.origin.startsWith('https://script.google.com')) return;
-          
-          try {
-            const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-            if (data.action === 'sync_complete') {
-              statusText.innerText = "Data Synced Safely";
-            }
-          } catch (e) {
-            console.log("Received raw iframe message:", event.data);
-          }
-        });
+        function trusted(origin) {
+            try {
+                var h = new URL(origin).hostname;
+                return h === 'script.google.com' || /(^|\.)googleusercontent\.com$/.test(h);
+            } catch (e) { return false; }
+        }
 
-        // ২. স্ট্রাকচারাল রেজিস্ট্রেশনস (আইফ্রেম লোড হ্যান্ডলার)
-        iframe.onload = function() {
-          if (!explicitLoadInitiated) return;
-
-          if (fallbackTimer) {
-            clearTimeout(fallbackTimer);
-          }
-          
-          statusText.innerText = "FaxGer Global Logistics";
-          setTimeout(() => {
+        function showApp() {
+            if (shown) return;
+            shown = true;
+            clearTimeout(shellTimer);
+            clearTimeout(slowTimer);
+            retryBtn.classList.remove('show');
             iframe.classList.add('loaded');
             loader.classList.add('hidden');
-          }, 300);
-        };
+        }
 
-        window.addEventListener('offline', () => {
-          statusText.innerText = "Offline - Check Connection";
-          statusText.style.color = "#ff4757";
+        function showSlow() {
+            if (shown) return;
+            statusText.textContent = 'লোড হতে বেশি সময় লাগছে...';
+            statusText.style.color = '#ff4757';
+            retryBtn.classList.add('show');
+        }
+
+        function load() {
+            shown = false;
+            started = true;
+            clearTimeout(shellTimer);
+            clearTimeout(slowTimer);
+            retryBtn.classList.remove('show');
+            iframe.classList.remove('loaded');
+            loader.classList.remove('hidden');
+            statusText.textContent = 'Loading application...';
+            statusText.style.color = '#333';
+            slowTimer = setTimeout(showSlow, SLOW_AFTER);
+            iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + '_nc=' + Date.now();
+        }
+
+        // iframe এর খোলস লোড হলে (ভেতরের app তখনও আসতে পারে)
+        iframe.addEventListener('load', function () {
+            if (!started || shown) return;
+            statusText.textContent = 'FaxGer Global Logistics';
+            clearTimeout(shellTimer);
+            shellTimer = setTimeout(showApp, APP_SENDS_READY ? READY_MAX : SHELL_WAIT);
         });
 
-        window.addEventListener('online', () => {
-          statusText.innerText = "Reconnecting...";
-          statusText.style.color = "var(--primary, #007bff)"; 
+        // ভেতরের app থেকে মেসেজ (Google এর sandbox origin সহ)
+        window.addEventListener('message', function (event) {
+            if (!trusted(event.origin)) return;
+            var data = event.data;
+            try { if (typeof data === 'string') data = JSON.parse(data); } catch (e) { return; }
+            if (!data || typeof data !== 'object') return;
+            if (data.action === 'app_ready') showApp();
+            if (data.action === 'sync_complete') statusText.textContent = 'Data Synced Safely';
         });
 
-        // সেফটি ইঞ্জিন ফলব্যাক টাইম ৬ সেকেন্ডে নামিয়ে আনা হলো যাতে দ্রুত লোড হয়
-        fallbackTimer = setTimeout(() => {
-          if (!iframe.classList.contains('loaded')) {
-            statusText.innerText = "Loading view...";
-            iframe.classList.add('loaded');
-            loader.classList.add('hidden');
-          }
-        }, 6000);
+        retryBtn.addEventListener('click', load);
+
+        window.addEventListener('offline', function () {
+            statusText.textContent = 'Offline - Check Connection';
+            statusText.style.color = '#ff4757';
+        });
+
+        // ইন্টারনেট ফিরলে, app এখনও না এসে থাকলে আবার লোড করবে
+        window.addEventListener('online', function () {
+            statusText.style.color = '#333';
+            statusText.textContent = 'Reconnecting...';
+            if (!shown) load();
+        });
 
         // আইওএস (iOS) ওয়েবকিট স্কেল মিটিগেশন
         document.body.addEventListener('gesturestart', function (e) {
-          e.preventDefault();
+            e.preventDefault();
         });
 
-        // ৩. একটিভ রেজোলিউশন এক্সিকিউশন ফেজ
-        (function() {
-          const baseUrl = "https://script.google.com/macros/s/AKfycbyR8bmTqg5_L6CdVYZHz5oTse6GKHREM92rDXAjQlF0IHMVrDaoGjOutzypjmB4QbxN/exec";
-          const targetUrl = baseUrl + (baseUrl.includes('?') ? '&' : '?') + '_nc=' + Date.now();
-          
-          explicitLoadInitiated = true;
-          iframe.src = targetUrl; 
-        })();
+        load();
+    })();
     </script>
 
 </body>
