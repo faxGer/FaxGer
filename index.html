@@ -329,7 +329,7 @@
         #hint-box.show { display: flex; }
         #hint-text { flex: 1; }
         #hint-x { color: #fff; }
-        /* ================= WhatsApp floating button ================= */
+                /* ================= WhatsApp floating button (টেনে সরানো যায়) ================= */
         #wa-btn {
             position: fixed;
             right: 16px;
@@ -344,9 +344,22 @@
             text-decoration: none;
             box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
             transition: transform .2s ease;
+            touch-action: none;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
         }
         #wa-btn:hover { transform: scale(1.08); }
-        #wa-btn svg { width: 30px; height: 30px; fill: #ffffff; }
+        #wa-btn.drag {
+            cursor: grabbing;
+            transform: scale(1.12);
+            transition: none;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .4);
+        }
+        #wa-btn.drag::before { display: none; }
+        #wa-btn svg { width: 30px; height: 30px; fill: #ffffff; pointer-events: none; }
         #wa-btn::before {
             content: "";
             position: absolute;
@@ -713,6 +726,83 @@
                 navigator.serviceWorker.register('sw.js').catch(function () {});   // sw.js না থাকলেও সমস্যা নেই
             }
         }
+
+                // ===================== WhatsApp বাটন: টেনে যেকোনো জায়গায় সরানো যাবে =====================
+        (function () {
+            var wa = $('wa-btn');
+            if (!wa) return;
+            var KEY = 'faxger_wa_pos', MARGIN = 8, THRESHOLD = 6;
+            var drag = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, pid = null;
+
+            function size() { return wa.offsetWidth || 56; }
+            function place(x, y) {
+                var maxX = Math.max(MARGIN, window.innerWidth - size() - MARGIN);
+                var maxY = Math.max(MARGIN, window.innerHeight - size() - MARGIN);
+                x = Math.min(Math.max(MARGIN, x), maxX);
+                y = Math.min(Math.max(MARGIN, y), maxY);
+                wa.style.left = x + 'px';
+                wa.style.top = y + 'px';
+                wa.style.right = 'auto';
+                wa.style.bottom = 'auto';
+            }
+            // অবস্থান শতাংশ হিসেবে রাখা হয়, তাই screen ঘোরালেও প্রায় একই জায়গায় থাকে
+            function save() {
+                try {
+                    var r = wa.getBoundingClientRect();
+                    var w = Math.max(1, window.innerWidth - size() - 2 * MARGIN);
+                    var h = Math.max(1, window.innerHeight - size() - 2 * MARGIN);
+                    localStorage.setItem(KEY, JSON.stringify([(r.left - MARGIN) / w, (r.top - MARGIN) / h]));
+                } catch (e) {}
+            }
+            function restore() {
+                var v = null;
+                try { v = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+                if (!v || v.length !== 2 || isNaN(v[0]) || isNaN(v[1])) return;
+                var w = Math.max(0, window.innerWidth - size() - 2 * MARGIN);
+                var h = Math.max(0, window.innerHeight - size() - 2 * MARGIN);
+                place(MARGIN + v[0] * w, MARGIN + v[1] * h);
+            }
+
+            wa.addEventListener('pointerdown', function (e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                var r = wa.getBoundingClientRect();
+                drag = true; moved = false; pid = e.pointerId;
+                sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+                try { wa.setPointerCapture(pid); } catch (x) {}   // iframe এর উপর দিয়ে টানলেও ইভেন্ট হারাবে না
+            });
+            wa.addEventListener('pointermove', function (e) {
+                if (!drag || e.pointerId !== pid) return;
+                var dx = e.clientX - sx, dy = e.clientY - sy;
+                if (!moved && Math.abs(dx) + Math.abs(dy) < THRESHOLD) return;
+                if (!moved) { moved = true; wa.classList.add('drag'); }
+                place(ox + dx, oy + dy);
+                e.preventDefault();
+            });
+            function end(e) {
+                if (!drag || (e && e.pointerId !== pid)) return;
+                drag = false;
+                try { wa.releasePointerCapture(pid); } catch (x) {}
+                wa.classList.remove('drag');
+                if (moved) {
+                    save();
+                    setTimeout(function () { moved = false; }, 80);   // টানার পর ভুলে WhatsApp খোলা আটকায়
+                }
+            }
+            wa.addEventListener('pointerup', end);
+            wa.addEventListener('pointercancel', end);
+            wa.addEventListener('click', function (e) {
+                if (moved) { e.preventDefault(); e.stopPropagation(); }
+            });
+            wa.addEventListener('dragstart', function (e) { e.preventDefault(); });
+            wa.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+            window.addEventListener('resize', function () {
+                if (!wa.style.left) return;
+                var r = wa.getBoundingClientRect();
+                place(r.left, r.top);
+            });
+
+            restore();
+        })();
 
         load();        // আগে app লোড শুরু
         setupApp();    // তারপর logo / manifest (app লোডকে আটকায় না)
