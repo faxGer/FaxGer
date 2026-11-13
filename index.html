@@ -106,6 +106,54 @@
             to { opacity: 1; transform: none; }
         }
 
+        /* ---------- 4টা আলাদা Page (slide) ---------- */
+        .pages {
+            position: relative;
+            width: 100%;
+            height: 236px;
+        }
+        .page {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(30px);
+            transition: opacity .45s ease, transform .45s ease, visibility 0s linear .45s;
+        }
+        .page.past { transform: translateX(-30px); }
+        .page.active {
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            transition: opacity .45s ease .1s, transform .45s ease .1s, visibility 0s linear 0s;
+        }
+        .art {
+            position: relative;
+            width: 132px;
+            height: 132px;
+            display: grid;
+            place-items: center;
+        }
+        .art svg { width: 120px; height: 120px; overflow: visible; }
+        .ptitle {
+            margin: 26px 0 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: .3px;
+        }
+        .psub {
+            margin-top: 8px;
+            padding: 0 8px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .3px;
+            color: #9cc4ff;
+        }
+
         .emblem {
             position: relative;
             width: 132px;
@@ -184,6 +232,23 @@
             text-transform: uppercase;
             color: #9cc4ff;
         }
+
+        /* Page 2: Globe */
+        .orbit {
+            transform-origin: 60px 60px;
+            animation: spin 6s linear infinite;
+        }
+        /* Page 3: Route */
+        .route { animation: flow 1.2s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -24; } }
+        /* Page 4: Shield */
+        .check {
+            stroke-dasharray: 70;
+            stroke-dashoffset: 70;
+        }
+        .page.active .check { animation: draw .7s ease .35s forwards; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+
         #status-text {
             margin-top: 24px;
             min-height: 20px;
@@ -221,19 +286,31 @@
             font-size: 12px;
             color: #9cb4d8;
         }
+
+        /* 4টা bar: প্রতিটা চাপলে নিজের page দেখাবে */
         .steps {
             display: flex;
             gap: 8px;
             margin-top: 18px;
         }
-        .steps i {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .steps button {
+            position: relative;
+            width: 22px;
+            height: 6px;
+            padding: 0;
+            border: 0;
+            border-radius: 99px;
             background: rgba(255,255,255,.2);
-            transition: background .3s ease, transform .3s ease;
+            cursor: pointer;
+            transition: background .3s ease, width .3s ease;
         }
-        .steps i.on { background: #38bdf8; transform: scale(1.25); }
+        .steps button::before {
+            content: "";
+            position: absolute;
+            top: -12px; bottom: -12px; left: -4px; right: -4px;
+        }
+        .steps button.on { background: rgba(56,189,248,.5); }
+        .steps button.cur { background: #38bdf8; width: 36px; }
         #retry-btn {
             display: none;
             margin-top: 20px;
@@ -260,8 +337,9 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (prefers-reduced-motion: reduce) {
-            .orb, .pulse, #bar-fill, .stage { animation: none; }
+            .orb, .pulse, #bar-fill, .stage, .orbit, .route { animation: none; }
             .ring { animation-duration: 6s; }
+            .page.active .check { animation-duration: .01s; }
         }
 
         /* ================= App iframe ================= */
@@ -329,7 +407,7 @@
         #hint-box.show { display: flex; }
         #hint-text { flex: 1; }
         #hint-x { color: #fff; }
-                /* ================= WhatsApp floating button (টেনে সরানো যায়) ================= */
+        /* ================= WhatsApp floating button (টেনে সরানো যায়) ================= */
         #wa-btn {
             position: fixed;
             right: 16px;
@@ -379,39 +457,39 @@
         }
 
         /* ================= WhatsApp hide করার X ================= */
-#wa-x {
-    position: fixed;
-    left: 50%;
-    margin-left: -30px;
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    z-index: 899;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(11, 30, 63, .88);
-    color: #ffffff;
-    font-size: 30px;
-    line-height: 60px;
-    text-align: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(.7);
-    transition: opacity .2s ease, transform .2s ease, background .2s ease, visibility 0s linear .2s;
-}
-#wa-x.show {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-    transition: opacity .2s ease, transform .2s ease, background .2s ease;
-}
-#wa-x.hot {
-    background: #e53935;
-    transform: scale(1.25);
-}
-        
-            /* ================= Barcode Scanner (wrapper) ================= */
+        #wa-x {
+            position: fixed;
+            left: 50%;
+            margin-left: -30px;
+            bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+            z-index: 899;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(11, 30, 63, .88);
+            color: #ffffff;
+            font-size: 30px;
+            line-height: 60px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(.7);
+            transition: opacity .2s ease, transform .2s ease, background .2s ease, visibility 0s linear .2s;
+        }
+        #wa-x.show {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            transition: opacity .2s ease, transform .2s ease, background .2s ease;
+        }
+        #wa-x.hot {
+            background: #e53935;
+            transform: scale(1.25);
+        }
+
+        /* ================= Barcode Scanner (wrapper) ================= */
         #scan-overlay {
             display: none;
             position: fixed;
@@ -485,30 +563,91 @@
         </div>
 
         <div class="stage">
-            <div class="emblem">
-                <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
-                    <defs>
-                        <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0" stop-color="#38bdf8"/>
-                            <stop offset="1" stop-color="#3b82f6"/>
-                        </linearGradient>
-                    </defs>
-                    <circle class="track" cx="60" cy="60" r="56"/>
-                    <circle class="arc" cx="60" cy="60" r="56"/>
-                </svg>
-                <span class="pulse"></span>
-                <div class="tile" id="tile">
-                    <span class="mono">FG</span>
-                    <img id="logo" alt="FaxGer logo">
-                </div>
-            </div>
 
-            <h1 class="brand">FaxGer Express<span>We Deliver Smiles Across The Globe!</span></h1>
+            <div class="pages">
+
+                <!-- Page 1: Logo + Brand -->
+                <div class="page" data-page="0">
+                    <div class="emblem">
+                        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#38bdf8"/>
+                                    <stop offset="1" stop-color="#3b82f6"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="track" cx="60" cy="60" r="56"/>
+                            <circle class="arc" cx="60" cy="60" r="56"/>
+                        </svg>
+                        <span class="pulse"></span>
+                        <div class="tile" id="tile">
+                            <span class="mono">FG</span>
+                            <img id="logo" alt="FaxGer logo">
+                        </div>
+                    </div>
+                    <h1 class="brand">FaxGer Express<span>We Deliver Smiles Across The Globe!</span></h1>
+                </div>
+
+                <!-- Page 2: Worldwide Delivery -->
+                <div class="page" data-page="1">
+                    <div class="art">
+                        <svg viewBox="0 0 120 120" aria-hidden="true">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1.5" stroke-dasharray="3 6"/>
+                            <circle cx="60" cy="60" r="38" fill="rgba(56,189,248,.12)" stroke="#38bdf8" stroke-width="2.5"/>
+                            <ellipse cx="60" cy="60" rx="16" ry="38" fill="none" stroke="#38bdf8" stroke-width="1.8" opacity=".8"/>
+                            <path d="M22 60H98M27 42H93M27 78H93M60 22V98" fill="none" stroke="#38bdf8" stroke-width="1.8" opacity=".8"/>
+                            <g class="orbit">
+                                <circle cx="114" cy="60" r="5.5" fill="#ffffff"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="ptitle">Worldwide Delivery</div>
+                    <div class="psub">From our door to yours, across the globe</div>
+                </div>
+
+                <!-- Page 3: Shipment Tracking -->
+                <div class="page" data-page="2">
+                    <div class="art">
+                        <svg viewBox="0 0 120 120" aria-hidden="true">
+                            <path class="route" d="M16 88 C40 20 80 110 104 32" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 16"/>
+                            <circle cx="16" cy="88" r="7" fill="#38bdf8"/>
+                            <circle cx="104" cy="32" r="7" fill="#3b82f6"/>
+                            <circle cx="104" cy="32" r="12" fill="none" stroke="#3b82f6" stroke-width="2" opacity=".6"/>
+                            <g>
+                                <rect x="-9" y="-9" width="18" height="18" rx="4" fill="#ffffff"/>
+                                <path d="M-9 -2H9M0 -9V-2" stroke="#0b3a8a" stroke-width="2.2"/>
+                                <animateMotion dur="3s" repeatCount="indefinite" path="M16 88 C40 20 80 110 104 32" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="ptitle">Live Shipment Tracking</div>
+                    <div class="psub">Know where your parcel is, every step</div>
+                </div>
+
+                <!-- Page 4: Safe & Secure -->
+                <div class="page" data-page="3">
+                    <div class="art">
+                        <span class="pulse"></span>
+                        <svg viewBox="0 0 120 120" aria-hidden="true">
+                            <path d="M60 10 L100 26 V58 C100 84 82 102 60 112 C38 102 20 84 20 58 V26 Z" fill="rgba(56,189,248,.14)" stroke="#38bdf8" stroke-width="3" stroke-linejoin="round"/>
+                            <path class="check" d="M41 60 L54 73 L80 45" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="ptitle">Safe &amp; Secure</div>
+                    <div class="psub">Your data and parcels stay protected</div>
+                </div>
+
+            </div>
 
             <div id="status-text">Starting up...</div>
             <div class="bar"><i id="bar-fill"></i></div>
             <div class="meta"><span>Please wait</span><span id="pct">0%</span></div>
-            <div class="steps" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="steps">
+                <button type="button" aria-label="Page 1"></button>
+                <button type="button" aria-label="Page 2"></button>
+                <button type="button" aria-label="Page 3"></button>
+                <button type="button" aria-label="Page 4"></button>
+            </div>
             <button id="retry-btn" type="button">Retry</button>
         </div>
 
@@ -517,13 +656,14 @@
 
     <iframe id="main-app" title="FaxGer Global Logistics" loading="eager"></iframe>
 
-        <!-- WhatsApp: নিচের 8801XXXXXXXXX জায়গায় নিজের নম্বর বসান (দেশের কোড সহ, + বা শুরুর 0 ছাড়া। যেমন 8801712345678) -->
+    <!-- WhatsApp: নিচের 8801XXXXXXXXX জায়গায় নিজের নম্বর বসান (দেশের কোড সহ, + বা শুরুর 0 ছাড়া। যেমন 8801712345678) -->
     <a id="wa-btn" href="https://wa.me/8801841990748?text=Hello%20FaxGer%2C%20I%20need%20help." target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" title="Chat on WhatsApp">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
     </a>
 
     <div id="wa-x" aria-hidden="true">&times;</div>
-        <div id="scan-overlay" role="dialog" aria-modal="true" aria-label="Barcode scanner">
+
+    <div id="scan-overlay" role="dialog" aria-modal="true" aria-label="Barcode scanner">
         <div class="scan-box">
             <div class="scan-head"><b>Barcode / QR Scanner</b><button id="scan-close" type="button" aria-label="Close">&times;</button></div>
             <video id="scan-video" autoplay playsinline muted></video>
@@ -555,12 +695,14 @@
         var SLOW_AFTER = 25000;       // এর মধ্যে কিছু না হলে Retry বাটন (ms)
         var MIN_SHOW = 1200;          // loader কমপক্ষে এতক্ষণ দেখাবে (ms)
         var FINISH_DELAY = 500;       // 100% দেখানোর পর সরার আগে বিরতি (ms)
+        var PAGE_LOCK = 6000;         // bar চাপলে এতক্ষণ ওই page স্থির থাকবে (ms)
 
         var DRIVE_LOGOS = [
             "https://lh3.googleusercontent.com/d/" + LOGO_ID + "=s512",
             "https://drive.google.com/thumbnail?id=" + LOGO_ID + "&sz=w512",
             "https://drive.google.com/uc?export=view&id=" + LOGO_ID
         ];
+        // প্রতিটা stage = একটা আলাদা page
         var STAGES = [
             [0,  'Connecting securely...'],
             [25, 'Loading your workspace...'],
@@ -572,10 +714,13 @@
         var $ = function (id) { return document.getElementById(id); };
         var iframe = $('main-app'), loader = $('loader'), statusText = $('status-text'),
             retryBtn = $('retry-btn'), barFill = $('bar-fill'), pctEl = $('pct'),
-            tile = $('tile'), logoEl = $('logo'), dots = loader.querySelectorAll('.steps i');
+            tile = $('tile'), logoEl = $('logo'),
+            dots = loader.querySelectorAll('.steps button'),
+            pages = loader.querySelectorAll('.page');
         var shown = false, started = false, slowShown = false, shellLoaded = false,
             runId = 0, startAt = Date.now(), shellTimer = null, slowTimer = null,
-            progTimer = null, prog = 0, stageIdx = -1;
+            progTimer = null, prog = 0, stageIdx = -1,
+            curPage = -1, reached = 0, lockUntil = 0;
 
         // ===================== Loader helpers =====================
         function setStatus(t, color) {
@@ -586,12 +731,28 @@
                 statusText.style.opacity = 1;
             }, 160);
         }
+        function paintDots() {
+            for (var i = 0; i < dots.length; i++) {
+                dots[i].className = (i <= reached ? 'on' : '') + (i === curPage ? ' cur' : '');
+            }
+        }
+        function setPage(n) {
+            if (n === curPage) return;
+            curPage = n;
+            for (var i = 0; i < pages.length; i++) {
+                pages[i].classList.toggle('active', i === n);
+                pages[i].classList.toggle('past', i < n);
+            }
+            paintDots();
+        }
         function render() {
             barFill.style.width = prog.toFixed(1) + '%';
             pctEl.textContent = Math.floor(prog) + '%';
             var idx = 0, i;
             for (i = 0; i < STAGES.length; i++) if (prog >= STAGES[i][0]) idx = i;
-            for (i = 0; i < dots.length; i++) dots[i].className = i <= idx ? 'on' : '';
+            reached = idx;
+            if (Date.now() >= lockUntil) setPage(idx);   // bar চেপে page বেছে নিলে কিছুক্ষণ auto বদলাবে না
+            paintDots();
             if (idx !== stageIdx && !shown && !slowShown && navigator.onLine !== false) {
                 stageIdx = idx;
                 setStatus(STAGES[idx][1]);
@@ -605,8 +766,8 @@
             clearTimeout(slowTimer);
             clearInterval(progTimer);
             retryBtn.classList.remove('show');
+            lockUntil = 0;
             prog = 100; render();
-            for (var i = 0; i < dots.length; i++) dots[i].className = 'on';
             setStatus('Ready');
             var wait = Math.max(0, MIN_SHOW - (Date.now() - startAt)) + FINISH_DELAY;
             setTimeout(function () {
@@ -629,7 +790,7 @@
             retryBtn.classList.remove('show');
             iframe.classList.remove('loaded');
             loader.classList.remove('hidden');
-            prog = 0; stageIdx = -1; render();
+            prog = 0; stageIdx = -1; curPage = -1; reached = 0; lockUntil = 0; render();
             progTimer = setInterval(function () {
                 if (shown) return;
                 var cap = shellLoaded ? 94 : 78;   // আনুমানিক অগ্রগতি (আসল ডাউনলোড মাপা নয়)
@@ -640,6 +801,15 @@
             slowTimer = setTimeout(showSlow, SLOW_AFTER);
             iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + '_nc=' + Date.now();
         }
+
+        // 4টা bar এর যেকোনোটা চাপলে সেই page দেখাবে
+        Array.prototype.forEach.call(dots, function (d, i) {
+            d.addEventListener('click', function () {
+                if (shown) return;
+                lockUntil = Date.now() + PAGE_LOCK;
+                setPage(i);
+            });
+        });
 
         // ===================== iframe security / permissions =====================
         iframe.setAttribute('sandbox', 'allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads allow-top-navigation allow-top-navigation-by-user-activation');
@@ -834,104 +1004,104 @@
             }
         }
 
-                // ===================== WhatsApp বাটন: টেনে সরানো যাবে, X এ নিলে হাইড হবে =====================
-(function () {
-    var wa = $('wa-btn'), xz = $('wa-x');
-    if (!wa) return;
-    var KEY = 'faxger_wa_pos', MARGIN = 8, THRESHOLD = 6, NEAR = 80;
-    var drag = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, pid = null, hidden = false;
+        // ===================== WhatsApp বাটন: টেনে সরানো যাবে, X এ নিলে হাইড হবে =====================
+        (function () {
+            var wa = $('wa-btn'), xz = $('wa-x');
+            if (!wa) return;
+            var KEY = 'faxger_wa_pos', MARGIN = 8, THRESHOLD = 6, NEAR = 80;
+            var drag = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0, pid = null, hidden = false;
 
-    function size() { return wa.offsetWidth || 56; }
-    function place(x, y) {
-        var maxX = Math.max(MARGIN, window.innerWidth - size() - MARGIN);
-        var maxY = Math.max(MARGIN, window.innerHeight - size() - MARGIN);
-        x = Math.min(Math.max(MARGIN, x), maxX);
-        y = Math.min(Math.max(MARGIN, y), maxY);
-        wa.style.left = x + 'px';
-        wa.style.top = y + 'px';
-        wa.style.right = 'auto';
-        wa.style.bottom = 'auto';
-    }
-    function save() {
-        try {
-            var r = wa.getBoundingClientRect();
-            var w = Math.max(1, window.innerWidth - size() - 2 * MARGIN);
-            var h = Math.max(1, window.innerHeight - size() - 2 * MARGIN);
-            localStorage.setItem(KEY, JSON.stringify([(r.left - MARGIN) / w, (r.top - MARGIN) / h]));
-        } catch (e) {}
-    }
-    function restore() {
-        var v = null;
-        try { v = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-        if (!v || v.length !== 2 || isNaN(v[0]) || isNaN(v[1])) return;
-        var w = Math.max(0, window.innerWidth - size() - 2 * MARGIN);
-        var h = Math.max(0, window.innerHeight - size() - 2 * MARGIN);
-        place(MARGIN + v[0] * w, MARGIN + v[1] * h);
-    }
-    function isNear() {
-        if (!xz) return false;
-        var a = wa.getBoundingClientRect(), b = xz.getBoundingClientRect();
-        var dx = (a.left + a.width / 2) - (b.left + b.width / 2);
-        var dy = (a.top + a.height / 2) - (b.top + b.height / 2);
-        return Math.sqrt(dx * dx + dy * dy) < NEAR;
-    }
-
-    wa.addEventListener('pointerdown', function (e) {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        var r = wa.getBoundingClientRect();
-        drag = true; moved = false; pid = e.pointerId;
-        sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
-        try { wa.setPointerCapture(pid); } catch (x) {}
-    });
-    wa.addEventListener('pointermove', function (e) {
-        if (!drag || e.pointerId !== pid) return;
-        var dx = e.clientX - sx, dy = e.clientY - sy;
-        if (!moved && Math.abs(dx) + Math.abs(dy) < THRESHOLD) return;
-        if (!moved) {
-            moved = true;
-            wa.classList.add('drag');
-            if (xz) xz.classList.add('show');
-        }
-        place(ox + dx, oy + dy);
-        if (xz) {
-            if (isNear()) xz.classList.add('hot'); else xz.classList.remove('hot');
-        }
-        e.preventDefault();
-    });
-    function end(e) {
-        if (!drag || (e && e.pointerId !== pid)) return;
-        drag = false;
-        try { wa.releasePointerCapture(pid); } catch (x) {}
-        wa.classList.remove('drag');
-        if (moved) {
-            if (isNear()) {
-                // X এ ফেললে হাইড হবে। কিছু সেভ করা হয় না, তাই reload দিলে আবার আসবে
-                hidden = true;
-                wa.style.display = 'none';
-            } else {
-                save();
+            function size() { return wa.offsetWidth || 56; }
+            function place(x, y) {
+                var maxX = Math.max(MARGIN, window.innerWidth - size() - MARGIN);
+                var maxY = Math.max(MARGIN, window.innerHeight - size() - MARGIN);
+                x = Math.min(Math.max(MARGIN, x), maxX);
+                y = Math.min(Math.max(MARGIN, y), maxY);
+                wa.style.left = x + 'px';
+                wa.style.top = y + 'px';
+                wa.style.right = 'auto';
+                wa.style.bottom = 'auto';
             }
-            if (xz) { xz.classList.remove('show'); xz.classList.remove('hot'); }
-            setTimeout(function () { moved = false; }, 80);
-        }
-    }
-    wa.addEventListener('pointerup', end);
-    wa.addEventListener('pointercancel', end);
-    wa.addEventListener('click', function (e) {
-        if (moved) { e.preventDefault(); e.stopPropagation(); }
-    });
-    wa.addEventListener('dragstart', function (e) { e.preventDefault(); });
-    wa.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-    window.addEventListener('resize', function () {
-        if (hidden || !wa.style.left) return;
-        var r = wa.getBoundingClientRect();
-        place(r.left, r.top);
-    });
+            function save() {
+                try {
+                    var r = wa.getBoundingClientRect();
+                    var w = Math.max(1, window.innerWidth - size() - 2 * MARGIN);
+                    var h = Math.max(1, window.innerHeight - size() - 2 * MARGIN);
+                    localStorage.setItem(KEY, JSON.stringify([(r.left - MARGIN) / w, (r.top - MARGIN) / h]));
+                } catch (e) {}
+            }
+            function restore() {
+                var v = null;
+                try { v = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+                if (!v || v.length !== 2 || isNaN(v[0]) || isNaN(v[1])) return;
+                var w = Math.max(0, window.innerWidth - size() - 2 * MARGIN);
+                var h = Math.max(0, window.innerHeight - size() - 2 * MARGIN);
+                place(MARGIN + v[0] * w, MARGIN + v[1] * h);
+            }
+            function isNear() {
+                if (!xz) return false;
+                var a = wa.getBoundingClientRect(), b = xz.getBoundingClientRect();
+                var dx = (a.left + a.width / 2) - (b.left + b.width / 2);
+                var dy = (a.top + a.height / 2) - (b.top + b.height / 2);
+                return Math.sqrt(dx * dx + dy * dy) < NEAR;
+            }
 
-    restore();
-})();
+            wa.addEventListener('pointerdown', function (e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                var r = wa.getBoundingClientRect();
+                drag = true; moved = false; pid = e.pointerId;
+                sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+                try { wa.setPointerCapture(pid); } catch (x) {}   // iframe এর উপর দিয়ে টানলেও ইভেন্ট হারাবে না
+            });
+            wa.addEventListener('pointermove', function (e) {
+                if (!drag || e.pointerId !== pid) return;
+                var dx = e.clientX - sx, dy = e.clientY - sy;
+                if (!moved && Math.abs(dx) + Math.abs(dy) < THRESHOLD) return;
+                if (!moved) {
+                    moved = true;
+                    wa.classList.add('drag');
+                    if (xz) xz.classList.add('show');
+                }
+                place(ox + dx, oy + dy);
+                if (xz) {
+                    if (isNear()) xz.classList.add('hot'); else xz.classList.remove('hot');
+                }
+                e.preventDefault();
+            });
+            function end(e) {
+                if (!drag || (e && e.pointerId !== pid)) return;
+                drag = false;
+                try { wa.releasePointerCapture(pid); } catch (x) {}
+                wa.classList.remove('drag');
+                if (moved) {
+                    if (isNear()) {
+                        // X এ ফেললে হাইড হবে। কিছু সেভ করা হয় না, তাই reload দিলে আবার আসবে
+                        hidden = true;
+                        wa.style.display = 'none';
+                    } else {
+                        save();
+                    }
+                    if (xz) { xz.classList.remove('show'); xz.classList.remove('hot'); }
+                    setTimeout(function () { moved = false; }, 80);   // টানার পর ভুলে WhatsApp খোলা আটকায়
+                }
+            }
+            wa.addEventListener('pointerup', end);
+            wa.addEventListener('pointercancel', end);
+            wa.addEventListener('click', function (e) {
+                if (moved) { e.preventDefault(); e.stopPropagation(); }
+            });
+            wa.addEventListener('dragstart', function (e) { e.preventDefault(); });
+            wa.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+            window.addEventListener('resize', function () {
+                if (hidden || !wa.style.left) return;
+                var r = wa.getBoundingClientRect();
+                place(r.left, r.top);
+            });
 
-                // ===================== Barcode Scanner (wrapper এ চলে — Google iframe এর camera বাধা এড়াতে) =====================
+            restore();
+        })();
+
+        // ===================== Barcode Scanner (wrapper এ চলে — Google iframe এর camera বাধা এড়াতে) =====================
         (function () {
             var ov = $('scan-overlay'), vid = $('scan-video'), msg = $('scan-msg'),
                 closeBtn = $('scan-close'), photoBtn = $('scan-photo-btn'), photoIn = $('scan-photo-input');
